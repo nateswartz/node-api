@@ -15,4 +15,21 @@ async function getCollection(url) {
     }
 }
 
-module.exports = {getCollection};
+function filterCollection(collection, filters) {
+    let results = collection
+    const attributes = Object.keys(filters);
+    attributes.forEach(function(attribute) {
+        let intermediateResults = [];
+        results.forEach(function(item) {
+            console.log(item[attribute]);
+            console.log(filters[attribute]);
+            if (parseInt(item[attribute]) > parseInt(filters[attribute])){
+                intermediateResults.push(item);
+            }
+        });
+        results = intermediateResults;
+    });
+    return results;
+}
+
+module.exports = {getCollection, filterCollection};
