@@ -8,4 +8,7 @@ module.exports = function(app) {
 
     app.route('/starwars/starships')
         .get(starshipsController.getAllStarships);
+    
+    app.route('/starwars/starships/filtered')
+        .get(starshipsController.getFilteredStarships);
 };
