@@ -1,3 +1,5 @@
+'use strict';
+
 class CollectionResponse {
     constructor(collection) {
       this.count = collection.length;

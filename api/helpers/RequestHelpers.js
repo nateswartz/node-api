@@ -1,6 +1,10 @@
+'use strict';
+
 const axios = require('axios');
 const fs = require('fs');
 const util = require('util');
+
+const config = require('../../config.json');
 
 const existsAsync = util.promisify(fs.exists);
 const statAsync = util.promisify(fs.stat);
@@ -10,7 +14,7 @@ const readFileAsync = util.promisify(fs.readFile);
 async function getCollection(url) {
     const cacheFileName = url.replace(/\/|\\|\:|\*|\?|\"|\<|\>|\|/g, '') + '.json';
     if (await shouldUseCache(cacheFileName)) {
-        const cachedResults = JSON.parse(await readFileAsync(cacheFile));
+        const cachedResults = JSON.parse(await readFileAsync(cacheFileName));
         return cachedResults;
     }
     else {
@@ -52,7 +56,7 @@ async function shouldUseCache(cacheFileName) {
         const stats = await statAsync(cacheFileName);
         const modifiedDate = stats.mtime;
         const elapsedMinutes = Math.floor(((new Date() - modifiedDate) / 1000) / 60);
-        if (elapsedMinutes < 60)
+        if (elapsedMinutes < config.cacheLifetimeMinutes)
         {
             return true;
         }

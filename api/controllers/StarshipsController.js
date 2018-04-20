@@ -1,7 +1,7 @@
 'use strict';
 
-const CollectionResponse = require('./models/CollectionResponse');
-const helpers = require('./helpers/RequestHelpers');
+const CollectionResponse = require('../models/CollectionResponse');
+const helpers = require('../helpers/RequestHelpers.js');
 
 exports.getAllStarships = async function(req, res) {
     const starships = await helpers.getCollection('https://swapi.co/api/starships/?page=1');

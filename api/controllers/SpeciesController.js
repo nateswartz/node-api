@@ -1,7 +1,7 @@
 'use strict';
 
-const CollectionResponse = require('./models/CollectionResponse');
-const helpers = require('./helpers/RequestHelpers.js');
+const CollectionResponse = require('../models/CollectionResponse');
+const helpers = require('../helpers/RequestHelpers.js');
 
 exports.getAllSpecies = async function(req, res) {
     const species = await helpers.getCollection('https://swapi.co/api/species/?page=1');
