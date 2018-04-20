@@ -8,19 +8,8 @@ const writeFileAsync = util.promisify(fs.writeFile);
 const readFileAsync = util.promisify(fs.readFile);
 
 async function getCollection(url) {
-    let useCacheFile = false;
-    // Get filesafe name \/:*?"<>|
-    const cacheFile = url.replace(/\/|\\|\:|\*|\?|\"|\<|\>|\|/g, '') + '.json';
-    if (await existsAsync(cacheFile)) {
-        const stats = await statAsync(cacheFile);
-        const modifiedDate = stats.mtime;
-        const elapsedMinutes = Math.floor(((new Date() - modifiedDate) / 1000) / 60);
-        if (elapsedMinutes < 60)
-        {
-            useCacheFile = true;
-        }
-    }
-    if (useCacheFile) {
+    const cacheFileName = url.replace(/\/|\\|\:|\*|\?|\"|\<|\>|\|/g, '') + '.json';
+    if (await shouldUseCache(cacheFileName)) {
         const cachedResults = JSON.parse(await readFileAsync(cacheFile));
         return cachedResults;
     }
@@ -33,7 +22,7 @@ async function getCollection(url) {
                 url = data.next;
                 collection = collection.concat(data.results);
             }
-            await writeFileAsync(cacheFile, JSON.stringify(collection, null, 2), 'utf-8');
+            await writeFileAsync(cacheFileName, JSON.stringify(collection, null, 2), 'utf-8');
             return collection;
         } catch (error) {
             return [];
@@ -56,6 +45,19 @@ function filterCollection(collection, filters) {
         results = intermediateResults;
     });
     return results;
+}
+
+async function shouldUseCache(cacheFileName) {
+    if (await existsAsync(cacheFileName)) {
+        const stats = await statAsync(cacheFileName);
+        const modifiedDate = stats.mtime;
+        const elapsedMinutes = Math.floor(((new Date() - modifiedDate) / 1000) / 60);
+        if (elapsedMinutes < 60)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 module.exports = {getCollection, filterCollection};
