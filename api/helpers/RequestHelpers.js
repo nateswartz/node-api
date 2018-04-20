@@ -39,13 +39,21 @@ function filterCollection(collection, filters) {
     const attributes = Object.keys(filters);
     attributes.forEach(function(attribute) {
         let intermediateResults = [];
-        results.forEach(function(item) {
-            console.log(item[attribute]);
-            console.log(filters[attribute]);
-            if (parseInt(item[attribute]) > parseInt(filters[attribute])){
-                intermediateResults.push(item);
-            }
-        });
+        // for non-numeric filters, check filter is substring of attribute
+        if (isNaN(filters[attribute])) {
+            results.forEach(function(item) {
+                if (item[attribute].includes(filters[attribute])){
+                    intermediateResults.push(item);
+                }
+            });
+        // for numeric filters, check filter is greater than attribute
+        } else {
+            results.forEach(function(item) {
+                if (parseInt(item[attribute]) > parseInt(filters[attribute])){
+                    intermediateResults.push(item);
+                }
+            });
+        }
         results = intermediateResults;
     });
     return results;
