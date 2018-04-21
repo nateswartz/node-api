@@ -38,4 +38,7 @@ module.exports = function(app) {
 
     app.route('/starwars/planets/:planet_id')
         .get(planetsController.getPlanet);
+
+    app.route('/starwars/planets/:planet_id/residents')
+        .get(planetsController.getResidents);
 };
