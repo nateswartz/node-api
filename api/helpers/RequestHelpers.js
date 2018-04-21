@@ -24,6 +24,12 @@ async function getCollection(url) {
                 const response = await axios.get(url);
                 const data = response.data;
                 url = data.next;
+                const items = response.data.results;
+                items.forEach(function(item) {
+                    const pieces = item.url.split('/');
+                    const id = pieces[pieces.length - 2];
+                    item.id = id;
+                });
                 collection = collection.concat(data.results);
             }
             await writeFileAsync(cacheFileName, JSON.stringify(collection, null, 2), 'utf-8');
@@ -36,8 +42,7 @@ async function getCollection(url) {
 
 function filterCollection(collection, filters) {
     let results = collection
-    const attributes = Object.keys(filters);
-    attributes.forEach(function(attribute) {
+    for (let attribute in filters) {
         let intermediateResults = [];
         // for non-numeric filters, check filter is substring of attribute
         if (isNaN(filters[attribute])) {
@@ -55,8 +60,30 @@ function filterCollection(collection, filters) {
             });
         }
         results = intermediateResults;
-    });
+    }
     return results;
+}
+
+async function getItem(baseUrl, id) {
+    const cacheFileName = baseUrl.replace(/\/|\\|\:|\*|\?|\"|\<|\>|\|/g, '') + '.json';
+    if (await shouldUseCache(cacheFileName)) {
+        const cachedResults = JSON.parse(await readFileAsync(cacheFileName));
+        for (let item of cachedResults) {
+            if (item.id === id) {
+                return item;
+            }
+        }
+        return null;
+    }
+    else {
+        try {
+            const response = await axios.get(baseUrl + '/' + id);
+            response.data.id = id;
+            return response.data;
+        } catch (error) {
+            return null;
+        }
+    }
 }
 
 async function shouldUseCache(cacheFileName) {
@@ -72,4 +99,4 @@ async function shouldUseCache(cacheFileName) {
     return false;
 }
 
-module.exports = {getCollection, filterCollection};
+module.exports = {getCollection, filterCollection, getItem};
