@@ -3,6 +3,8 @@
 module.exports = function(app) {
   var starshipsController = require('../controllers/StarshipsController');
   var speciesController = require('../controllers/SpeciesController');
+  var peopleController = require('../controllers/PeopleController');
+  var planetsController = require('../controllers/PlanetsController');
 
     app.route('/starwars/species')
         .get(speciesController.getAllSpecies);
@@ -15,4 +17,25 @@ module.exports = function(app) {
     
     app.route('/starwars/starships/filtered')
         .get(starshipsController.getFilteredStarships);
+
+    app.route('/starwars/people')
+        .get(peopleController.getAllPeople);
+    
+    app.route('/starwars/people/filtered')
+        .get(peopleController.getFilteredPeople);
+
+    app.route('/starwars/people/random')
+        .get(peopleController.getRandomPerson);
+
+    app.route('/starwars/planets')
+        .get(planetsController.getAllPlanets);
+    
+    app.route('/starwars/planets/filtered')
+        .get(planetsController.getFilteredPlanets);
+
+    app.route('/starwars/planets/random')
+        .get(planetsController.getRandomPlanet);
+
+    app.route('/starwars/planets/:planet_id')
+        .get(planetsController.getPlanet);
 };
