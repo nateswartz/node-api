@@ -12,6 +12,12 @@ module.exports = function(app) {
     app.route('/starwars/species/filtered')
         .get(speciesController.getFilteredSpecies);
 
+    app.route('/starwars/species/:species_id')
+        .get(speciesController.getSpecies);
+
+    app.route('/starwars/species/:species_id/people')
+        .get(speciesController.getPeople);
+
     app.route('/starwars/starships')
         .get(starshipsController.getAllStarships);
     
