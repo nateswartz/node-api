@@ -86,6 +86,29 @@ async function getItem(baseUrl, id) {
     }
 }
 
+async function getCollectionForItemProperty(itemUrl, id, property, collectionUrl) {
+    const item = await getItem(itemUrl, id);
+    if (item) {
+        let collection = [];
+        for (let url of item[property]) {
+            const pieces = url.split('/');
+            const id = pieces[pieces.length - 2];
+            const element = await getItem(collectionUrl, id);
+            collection.push(element);
+        }
+        if (collection.length != 0) {
+            return collection;
+        }
+        else {
+            //return "No collection found";
+            return [];
+        }
+    } else {
+        //return "No item found";
+        return [];
+    }
+}
+
 async function shouldUseCache(cacheFileName) {
     if (await existsAsync(cacheFileName)) {
         const stats = await statAsync(cacheFileName);
@@ -99,4 +122,4 @@ async function shouldUseCache(cacheFileName) {
     return false;
 }
 
-module.exports = {getCollection, filterCollection, getItem};
+module.exports = {getCollection, filterCollection, getItem, getCollectionForItemProperty};

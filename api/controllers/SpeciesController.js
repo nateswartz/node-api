@@ -23,23 +23,11 @@ exports.getSpecies = async function(req, res) {
 }
 
 exports.getPeople = async function(req, res) {
-    const species = await helpers.getItem(swapiUrl, req.params.species_id);
-    if (species) {
-        let membersOfSpecies = [];
-        for (let personUrl of species.people) {
-            const pieces = personUrl.split('/');
-            const id = pieces[pieces.length - 2];
-            const person = await helpers.getItem('https://swapi.co/api/people', id);
-            membersOfSpecies.push(person);
-        }
-        if (membersOfSpecies.length != 0) {
-            res.json(new CollectionResponse(membersOfSpecies));
-        }
-        else {
-            res.status(404).send('No people found.');
-        }
+    const membersOfSpecies = await helpers.getCollectionForItemProperty(swapiUrl, req.params.species_id, 'people', 'https://swapi.co/api/people');
+    if (membersOfSpecies.length != 0) {
+        res.json(new CollectionResponse(membersOfSpecies));
     } else {
-        res.status(404).send('No species found.');
+        res.status(404).send('No people found.');
     }
 }
 

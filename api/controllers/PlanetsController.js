@@ -23,23 +23,11 @@ exports.getPlanet = async function(req, res) {
 }
 
 exports.getResidents = async function(req, res) {
-    const planet = await helpers.getItem(swapiUrl, req.params.planet_id);
-    if (planet) {
-        let residents = [];
-        for (let personUrl of planet.residents) {
-            const pieces = personUrl.split('/');
-            const id = pieces[pieces.length - 2];
-            const person = await helpers.getItem('https://swapi.co/api/people', id);
-            residents.push(person);
-        }
-        if (residents.length != 0) {
-            res.json(new CollectionResponse(residents));
-        }
-        else {
-            res.status(404).send('No residents found.');
-        }
+    const residents = await helpers.getCollectionForItemProperty(swapiUrl, req.params.planet_id, 'residents', 'https://swapi.co/api/people');
+    if (residents.length != 0) {
+        res.json(new CollectionResponse(residents));
     } else {
-        res.status(404).send('No planet found.');
+        res.status(404).send('No residents found.');
     }
 }
 
