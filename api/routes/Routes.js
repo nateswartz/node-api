@@ -20,6 +20,12 @@ module.exports = function(app) {
 
     app.route('/starwars/starships')
         .get(starshipsController.getAllStarships);
+
+    app.route('/starwars/starships/:starship_id')
+        .get(starshipsController.getStarship);
+
+    app.route('/starwars/starships/:starship_id/pilots')
+        .get(starshipsController.getPilots);
     
     app.route('/starwars/starships/filtered')
         .get(starshipsController.getFilteredStarships);
