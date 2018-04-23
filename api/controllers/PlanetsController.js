@@ -25,12 +25,12 @@ exports.getPlanet = async function(req, res) {
 exports.getResidents = async function(req, res) {
     const planet = await helpers.getItem(swapiUrl, req.params.planet_id);
     if (planet) {
-        const people = await helpers.getCollection('https://swapi.co/api/people');
         let residents = [];
-        for (let person of people) {
-            if (person.homeworld === planet.url) {
-                residents.push(person);
-            }
+        for (let personUrl of planet.residents) {
+            const pieces = personUrl.split('/');
+            const id = pieces[pieces.length - 2];
+            const person = await helpers.getItem('https://swapi.co/api/people', id);
+            residents.push(person);
         }
         if (residents.length != 0) {
             res.json(new CollectionResponse(residents));

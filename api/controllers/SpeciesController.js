@@ -25,12 +25,12 @@ exports.getSpecies = async function(req, res) {
 exports.getPeople = async function(req, res) {
     const species = await helpers.getItem(swapiUrl, req.params.species_id);
     if (species) {
-        const people = await helpers.getCollection('https://swapi.co/api/people');
         let membersOfSpecies = [];
-        for (let person of people) {
-            if (person.species.includes(species.url)) {
-                membersOfSpecies.push(person);
-            }
+        for (let personUrl of species.people) {
+            const pieces = personUrl.split('/');
+            const id = pieces[pieces.length - 2];
+            const person = await helpers.getItem('https://swapi.co/api/people', id);
+            membersOfSpecies.push(person);
         }
         if (membersOfSpecies.length != 0) {
             res.json(new CollectionResponse(membersOfSpecies));
