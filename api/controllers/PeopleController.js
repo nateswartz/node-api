@@ -32,16 +32,6 @@ exports.getAllPersonInfo = async function(req, res) {
         }
     }
 
-    //const species = await helpers.getCollectionForItemProperty(swapiUrl, req.params.person_id, 'species', 'https://swapi.co/api/species');
-    //const vehicles = await helpers.getCollectionForItemProperty(swapiUrl, req.params.person_id, 'vehicles', 'https://swapi.co/api/vehicles')
-    //const starships = await helpers.getCollectionForItemProperty(swapiUrl, req.params.person_id, 'starships', 'https://swapi.co/api/starships')
-    //const planet = await helpers.getCollectionForItemProperty(swapiUrl, req.params.person_id, 'homeworld', 'https://swapi.co/api/planets')
-
-    //person.species = species;
-    //person.vehicles = vehicles;
-    //person.starships = starships;
-    //person.homeworld = planet;
-
     if (person) {
         res.json(person);
     } else {
