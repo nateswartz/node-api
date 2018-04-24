@@ -32,6 +32,12 @@ module.exports = function(app) {
 
     app.route('/starwars/people')
         .get(peopleController.getAllPeople);
+
+    app.route('/starwars/people/:person_id')
+        .get(peopleController.getPerson);
+
+    app.route('/starwars/people/:person_id/all')
+        .get(peopleController.getAllPersonInfo);
     
     app.route('/starwars/people/filtered')
         .get(peopleController.getFilteredPeople);

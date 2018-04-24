@@ -90,16 +90,23 @@ async function getCollectionForItemProperty(itemUrl, id, property, collectionUrl
     const item = await getItem(itemUrl, id);
     if (item) {
         let collection = [];
-        for (let url of item[property]) {
-            const pieces = url.split('/');
+        if (Array.isArray(item[property])) {
+            for (let url of item[property]) {
+                const pieces = url.split('/');
+                const id = pieces[pieces.length - 2];
+                const element = await getItem(collectionUrl, id);
+                collection.push(element);
+            }
+        } else {
+            const pieces = item[property].split('/');
             const id = pieces[pieces.length - 2];
             const element = await getItem(collectionUrl, id);
             collection.push(element);
         }
+
         if (collection.length != 0) {
             return collection;
-        }
-        else {
+        } else {
             //return "No collection found";
             return [];
         }
