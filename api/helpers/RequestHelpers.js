@@ -8,8 +8,8 @@ const config = require('../../config.json');
 async function getCollection(collectionName) {
     let url = config.swapiBaseUrl + collectionName;
     const cacheFileName = url.replace(/\/|\\|\:|\*|\?|\"|\<|\>|\|/g, '') + '.json';
-    if (await shouldUseCache(cacheFileName)) {
-        const cachedResults = JSON.parse(await fs.readFile(cacheFileName));
+    const cachedResults = await getCachedResults(cacheFileName);
+    if (cachedResults) {
         return cachedResults;
     }
     else {
@@ -62,8 +62,8 @@ function filterCollection(collection, filters) {
 async function getItem(collectionName, id) {
     const url = config.swapiBaseUrl + collectionName;
     const cacheFileName = url.replace(/\/|\\|\:|\*|\?|\"|\<|\>|\|/g, '') + '.json';
-    if (await shouldUseCache(cacheFileName)) {
-        const cachedResults = JSON.parse(await fs.readFile(cacheFileName));
+    const cachedResults = await getCachedResults(cacheFileName);
+    if (cachedResults) {
         for (let item of cachedResults) {
             if (item.id === id) {
                 return item;
@@ -108,21 +108,19 @@ async function getCollectionForItemProperty(item, property) {
     }
 }
 
-async function shouldUseCache(cacheFileName) {
+async function getCachedResults(cacheFileName) {
     try
     {
-        if (await fs.readFile(cacheFileName)) {
-            const stats = await fs.stat(cacheFileName);
-            const modifiedDate = stats.mtime;
-            const elapsedMinutes = Math.floor(((new Date() - modifiedDate) / 1000) / 60);
-            if (elapsedMinutes < config.cacheLifetimeMinutes)
-            {
-                return true;
-            }
+        const stats = await fs.stat(cacheFileName);
+        const modifiedDate = stats.mtime;
+        const elapsedMinutes = Math.floor(((new Date() - modifiedDate) / 1000) / 60);
+        if (elapsedMinutes < config.cacheLifetimeMinutes)
+        {
+            return JSON.parse(await fs.readFile(cacheFileName));
         }
-        return false;
+        return null;
     } catch (error) {
-        return false;
+        return null;
     }
 }
 
