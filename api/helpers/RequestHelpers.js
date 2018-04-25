@@ -88,32 +88,28 @@ async function getItem(collectionName, id) {
     }
 }
 
-async function getCollectionForItemProperty(itemCollection, id, property, collectionCollection) {
-    const item = await getItem(itemCollection, id);
-    if (item) {
-        let collection = [];
-        if (Array.isArray(item[property])) {
-            for (let url of item[property]) {
-                const pieces = url.split('/');
-                const id = pieces[pieces.length - 2];
-                const element = await getItem(collectionCollection, id);
-                collection.push(element);
-            }
-        } else {
-            const pieces = item[property].split('/');
+async function getCollectionForItemProperty(item, property) {
+    let collection = [];
+    if (Array.isArray(item[property])) {
+        for (let url of item[property]) {
+            const pieces = url.split('/');
+            const resource = pieces[pieces.length - 3];
             const id = pieces[pieces.length - 2];
-            const element = await getItem(collectionCollection, id);
+            const element = await getItem(resource, id);
             collection.push(element);
         }
-
-        if (collection.length != 0) {
-            return collection;
-        } else {
-            //return "No collection found";
-            return [];
-        }
     } else {
-        //return "No item found";
+        const pieces = item[property].split('/');
+        const resource = pieces[pieces.length - 3];
+        const id = pieces[pieces.length - 2];
+        const element = await getItem(resource, id);
+        collection.push(element);
+    }
+
+    if (collection.length != 0) {
+        return collection;
+    } else {
+        //return "No collection found";
         return [];
     }
 }

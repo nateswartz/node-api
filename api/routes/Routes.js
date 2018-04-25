@@ -15,8 +15,8 @@ module.exports = function(app) {
     app.route('/starwars/species/:species_id')
         .get(speciesController.getSpecies);
 
-    app.route('/starwars/species/:species_id/people')
-        .get(speciesController.getPeople);
+    app.route('/starwars/species/:species_id/all')
+        .get(speciesController.getAllSpeciesInfo);
 
     app.route('/starwars/starships')
         .get(starshipsController.getAllStarships);
@@ -24,8 +24,8 @@ module.exports = function(app) {
     app.route('/starwars/starships/:starship_id')
         .get(starshipsController.getStarship);
 
-    app.route('/starwars/starships/:starship_id/pilots')
-        .get(starshipsController.getPilots);
+    app.route('/starwars/starships/:starship_id/all')
+        .get(starshipsController.getAllStarshipInfo);
     
     app.route('/starwars/starships/filtered')
         .get(starshipsController.getFilteredStarships);
@@ -57,6 +57,6 @@ module.exports = function(app) {
     app.route('/starwars/planets/:planet_id')
         .get(planetsController.getPlanet);
 
-    app.route('/starwars/planets/:planet_id/residents')
-        .get(planetsController.getResidents);
+    app.route('/starwars/planets/:planet_id/all')
+        .get(planetsController.getAllPlanetInfo);
 };

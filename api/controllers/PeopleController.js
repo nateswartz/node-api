@@ -3,10 +3,10 @@
 const CollectionResponse = require('../models/CollectionResponse');
 const helpers = require('../helpers/RequestHelpers.js');
 
-const collectionName = 'people';
+const _collectionName = 'people';
 
 exports.getAllPeople = async function(req, res) {
-    const people = await helpers.getCollection(collectionName);
+    const people = await helpers.getCollection(_collectionName);
     if (people.length != 0) {
         res.json(new CollectionResponse(people));
     } else {
@@ -15,7 +15,7 @@ exports.getAllPeople = async function(req, res) {
 };
 
 exports.getPerson = async function(req, res) {
-    const person = await helpers.getItem(collectionName, req.params.person_id);
+    const person = await helpers.getItem(_collectionName, req.params.person_id);
     if (person) {
         res.json(person);
     } else {
@@ -24,11 +24,11 @@ exports.getPerson = async function(req, res) {
 }
 
 exports.getAllPersonInfo = async function(req, res) {
-    const person = await helpers.getItem(collectionName, req.params.person_id);
+    const person = await helpers.getItem(_collectionName, req.params.person_id);
 
     for (let property in person) {
         if (Array.isArray(person[property]) || (person[property].startsWith('http') && property !== 'url')) {
-            const collection = await helpers.getCollectionForItemProperty(collectionName, req.params.person_id, property, property);
+            const collection = await helpers.getCollectionForItemProperty(person, property);
             person[property] = collection;
         }
     }
@@ -41,7 +41,7 @@ exports.getAllPersonInfo = async function(req, res) {
 }
 
 exports.getFilteredPeople = async function(req, res) {
-    let people = await helpers.getCollection(collectionName);
+    let people = await helpers.getCollection(_collectionName);
     people = helpers.filterCollection(people, req.query);
     if (people.length != 0) {
         res.json(new CollectionResponse(people));
@@ -51,7 +51,7 @@ exports.getFilteredPeople = async function(req, res) {
 };
 
 exports.getRandomPerson = async function(req, res) {
-    let people = await helpers.getCollection(collectionName);
+    let people = await helpers.getCollection(_collectionName);
     if (people.length !=0) {
         const randomPerson = people[Math.floor(Math.random() * people.length)];
         res.json(new CollectionResponse(randomPerson));

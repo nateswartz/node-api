@@ -3,10 +3,10 @@
 const CollectionResponse = require('../models/CollectionResponse');
 const helpers = require('../helpers/RequestHelpers.js');
 
-const collectionName = 'starships';
+const _collectionName = 'starships';
 
 exports.getAllStarships = async function(req, res) {
-    const starships = await helpers.getCollection(collectionName);
+    const starships = await helpers.getCollection(_collectionName);
     if (starships.length != 0) {
         res.json(new CollectionResponse(starships));
     } else {
@@ -15,7 +15,7 @@ exports.getAllStarships = async function(req, res) {
 };
 
 exports.getStarship = async function(req, res) {
-    const starship = await helpers.getItem(collectionName, req.params.starship_id);
+    const starship = await helpers.getItem(_collectionName, req.params.starship_id);
     if (starship) {
         res.json(starship);
     } else {
@@ -23,17 +23,25 @@ exports.getStarship = async function(req, res) {
     }
 }
 
-exports.getPilots = async function(req, res) {
-    const pilots = await helpers.getCollectionForItemProperty(collectionName, req.params.starship_id, 'pilots', 'people');
-    if (pilots.length != 0) {
-        res.json(new CollectionResponse(pilots));
+exports.getAllStarshipInfo = async function(req, res) {
+    const starship = await helpers.getItem(_collectionName, req.params.starship_id);
+
+    for (let property in starship) {
+        if (Array.isArray(starship[property]) || (starship[property].startsWith('http') && property !== 'url')) {
+            const collection = await helpers.getCollectionForItemProperty(starship, property);
+            starship[property] = collection;
+        }
+    }
+
+    if (starship) {
+        res.json(starship);
     } else {
-        res.status(404).send('No pilots found.');
+        res.status(404).send('No starship found.');
     }
 }
 
 exports.getFilteredStarships = async function(req, res) {
-    let starships = await helpers.getCollection(collectionName);
+    let starships = await helpers.getCollection(_collectionName);
     starships = helpers.filterCollection(starships, req.query);
     if (starships.length != 0) {
         res.json(new CollectionResponse(starships));
