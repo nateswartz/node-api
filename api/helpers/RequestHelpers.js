@@ -11,7 +11,8 @@ const statAsync = util.promisify(fs.stat);
 const writeFileAsync = util.promisify(fs.writeFile);
 const readFileAsync = util.promisify(fs.readFile);
 
-async function getCollection(url) {
+async function getCollection(collectionName) {
+    let url = config.swapiBaseUrl + collectionName;
     const cacheFileName = url.replace(/\/|\\|\:|\*|\?|\"|\<|\>|\|/g, '') + '.json';
     if (await shouldUseCache(cacheFileName)) {
         const cachedResults = JSON.parse(await readFileAsync(cacheFileName));
@@ -64,8 +65,9 @@ function filterCollection(collection, filters) {
     return results;
 }
 
-async function getItem(baseUrl, id) {
-    const cacheFileName = baseUrl.replace(/\/|\\|\:|\*|\?|\"|\<|\>|\|/g, '') + '.json';
+async function getItem(collectionName, id) {
+    const url = config.swapiBaseUrl + collectionName;
+    const cacheFileName = url.replace(/\/|\\|\:|\*|\?|\"|\<|\>|\|/g, '') + '.json';
     if (await shouldUseCache(cacheFileName)) {
         const cachedResults = JSON.parse(await readFileAsync(cacheFileName));
         for (let item of cachedResults) {
@@ -77,7 +79,7 @@ async function getItem(baseUrl, id) {
     }
     else {
         try {
-            const response = await axios.get(baseUrl + '/' + id);
+            const response = await axios.get(url + '/' + id);
             response.data.id = id;
             return response.data;
         } catch (error) {
@@ -86,21 +88,21 @@ async function getItem(baseUrl, id) {
     }
 }
 
-async function getCollectionForItemProperty(itemUrl, id, property, collectionUrl) {
-    const item = await getItem(itemUrl, id);
+async function getCollectionForItemProperty(itemCollection, id, property, collectionCollection) {
+    const item = await getItem(itemCollection, id);
     if (item) {
         let collection = [];
         if (Array.isArray(item[property])) {
             for (let url of item[property]) {
                 const pieces = url.split('/');
                 const id = pieces[pieces.length - 2];
-                const element = await getItem(collectionUrl, id);
+                const element = await getItem(collectionCollection, id);
                 collection.push(element);
             }
         } else {
             const pieces = item[property].split('/');
             const id = pieces[pieces.length - 2];
-            const element = await getItem(collectionUrl, id);
+            const element = await getItem(collectionCollection, id);
             collection.push(element);
         }
 

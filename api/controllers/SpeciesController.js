@@ -2,10 +2,11 @@
 
 const CollectionResponse = require('../models/CollectionResponse');
 const helpers = require('../helpers/RequestHelpers.js');
-const swapiUrl = 'https://swapi.co/api/species';
+
+const collectionName = 'species';
 
 exports.getAllSpecies = async function(req, res) {
-    const species = await helpers.getCollection(swapiUrl);
+    const species = await helpers.getCollection(collectionName);
     if (species.length != 0) {
         res.json(new CollectionResponse(species));
     } else {
@@ -14,7 +15,7 @@ exports.getAllSpecies = async function(req, res) {
 };
 
 exports.getSpecies = async function(req, res) {
-    const species = await helpers.getItem(swapiUrl, req.params.species_id);
+    const species = await helpers.getItem(collectionName, req.params.species_id);
     if (species) {
         res.json(species);
     } else {
@@ -23,7 +24,7 @@ exports.getSpecies = async function(req, res) {
 }
 
 exports.getPeople = async function(req, res) {
-    const membersOfSpecies = await helpers.getCollectionForItemProperty(swapiUrl, req.params.species_id, 'people', 'https://swapi.co/api/people');
+    const membersOfSpecies = await helpers.getCollectionForItemProperty(collectionName, req.params.species_id, 'people', 'people');
     if (membersOfSpecies.length != 0) {
         res.json(new CollectionResponse(membersOfSpecies));
     } else {
@@ -32,7 +33,7 @@ exports.getPeople = async function(req, res) {
 }
 
 exports.getFilteredSpecies = async function(req, res) {
-    let species = await helpers.getCollection(swapiUrl);
+    let species = await helpers.getCollection(collectionName);
     species = helpers.filterCollection(species, req.query);
     if (species.length != 0) {
         res.json(new CollectionResponse(species));

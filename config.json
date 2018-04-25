@@ -1,3 +1,4 @@
 {
-    "cacheLifetimeMinutes" : 60
+    "cacheLifetimeMinutes" : 60,
+    "swapiBaseUrl": "https://swapi.co/api/"
 }

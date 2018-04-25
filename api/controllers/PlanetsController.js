@@ -2,10 +2,11 @@
 
 const CollectionResponse = require('../models/CollectionResponse');
 const helpers = require('../helpers/RequestHelpers.js');
-const swapiUrl = 'https://swapi.co/api/planets';
+
+const collectionName = 'planets';
 
 exports.getAllPlanets = async function(req, res) {
-    const planets = await helpers.getCollection(swapiUrl);
+    const planets = await helpers.getCollection(collectionName);
     if (planets.length != 0) {
         res.json(new CollectionResponse(planets));
     } else {
@@ -14,7 +15,7 @@ exports.getAllPlanets = async function(req, res) {
 };
 
 exports.getPlanet = async function(req, res) {
-    const planet = await helpers.getItem(swapiUrl, req.params.planet_id);
+    const planet = await helpers.getItem(collectionName, req.params.planet_id);
     if (planet) {
         res.json(planet);
     } else {
@@ -23,7 +24,7 @@ exports.getPlanet = async function(req, res) {
 }
 
 exports.getResidents = async function(req, res) {
-    const residents = await helpers.getCollectionForItemProperty(swapiUrl, req.params.planet_id, 'residents', 'https://swapi.co/api/people');
+    const residents = await helpers.getCollectionForItemProperty(collectionName, req.params.planet_id, 'residents', 'people');
     if (residents.length != 0) {
         res.json(new CollectionResponse(residents));
     } else {
@@ -32,7 +33,7 @@ exports.getResidents = async function(req, res) {
 }
 
 exports.getFilteredPlanets = async function(req, res) {
-    let planets = await helpers.getCollection(swapiUrl);
+    let planets = await helpers.getCollection(collectionName);
     planets = helpers.filterCollection(planets, req.query);
     if (planets.length != 0) {
         res.json(new CollectionResponse(planets));
@@ -42,7 +43,7 @@ exports.getFilteredPlanets = async function(req, res) {
 };
 
 exports.getRandomPlanet = async function(req, res) {
-    let planets = await helpers.getCollection(swapiUrl);
+    let planets = await helpers.getCollection(collectionName);
     if (planets.length !=0) {
         const randomPerson = planets[Math.floor(Math.random() * planets.length)];
         res.json(new CollectionResponse(randomPerson));
