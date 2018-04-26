@@ -7,4 +7,4 @@ class CollectionResponse {
     }
 };
 
-module.exports = CollectionResponse; 
+module.exports = CollectionResponse;

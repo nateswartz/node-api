@@ -19,13 +19,14 @@ exports.getItem = async function(req, res) {
     } else {
         res.status(404).send('No item found.');
     }
-}
+};
 
 exports.getItemWithInfo = async function(req, res) {
     const item = await helpers.getItem(req.params.collection, req.params.item_id);
 
     for (let property in item) {
-        if (Array.isArray(item[property]) || isNaN(item[property]) && (item[property].startsWith('http') && property !== 'url')) {
+        if (Array.isArray(item[property])
+            || isNaN(item[property]) && (item[property].startsWith('http') && property !== 'url')) {
             const collection = await helpers.getCollectionForItemProperty(item, property);
             item[property] = collection;
         }
@@ -36,7 +37,7 @@ exports.getItemWithInfo = async function(req, res) {
     } else {
         res.status(404).send('No item found.');
     }
-}
+};
 
 exports.getFilteredItems = async function(req, res) {
     let items = await helpers.getCollection(req.params.collection);
@@ -56,4 +57,4 @@ exports.getRandomItem = async function(req, res) {
     } else {
         res.status(404).send('No items found.');
     }
-}
+};

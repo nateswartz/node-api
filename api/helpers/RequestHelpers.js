@@ -11,8 +11,7 @@ async function getCollection(collectionName) {
     const cachedResults = await getCachedResults(cacheFileName);
     if (cachedResults) {
         return cachedResults;
-    }
-    else {
+    } else {
         let collection = [];
         try {
             while (url != null) {
@@ -36,25 +35,27 @@ async function getCollection(collectionName) {
 }
 
 function filterCollection(collection, filters) {
-    let results = collection
+    let results = collection;
     for (let attribute in filters) {
-        let intermediateResults = [];
-        // for non-numeric filters, check filter is substring of attribute
-        if (isNaN(filters[attribute])) {
-            results.forEach(function(item) {
-                if (item[attribute].includes(filters[attribute])){
-                    intermediateResults.push(item);
-                }
-            });
-        // for numeric filters, check filter is greater than attribute
-        } else {
-            results.forEach(function(item) {
-                if (parseInt(item[attribute]) > parseInt(filters[attribute])){
-                    intermediateResults.push(item);
-                }
-            });
+        if (Object.prototype.hasOwnProperty.call(filters, attribute)) {
+            let intermediateResults = [];
+            // for non-numeric filters, check filter is substring of attribute
+            if (isNaN(filters[attribute])) {
+                results.forEach(function(item) {
+                    if (item[attribute].includes(filters[attribute])) {
+                        intermediateResults.push(item);
+                    }
+                });
+            // for numeric filters, check filter is greater than attribute
+            } else {
+                results.forEach(function(item) {
+                    if (parseInt(item[attribute]) > parseInt(filters[attribute])) {
+                        intermediateResults.push(item);
+                    }
+                });
+            }
+            results = intermediateResults;
         }
-        results = intermediateResults;
     }
     return results;
 }
@@ -70,8 +71,7 @@ async function getItem(collectionName, id) {
             }
         }
         return null;
-    }
-    else {
+    } else {
         try {
             const response = await axios.get(url + '/' + id);
             response.data.id = id;
@@ -103,19 +103,16 @@ async function getCollectionForItemProperty(item, property) {
     if (collection.length != 0) {
         return collection;
     } else {
-        //return "No collection found";
         return [];
     }
 }
 
 async function getCachedResults(cacheFileName) {
-    try
-    {
+    try {
         const stats = await fs.stat(cacheFileName);
         const modifiedDate = stats.mtime;
         const elapsedMinutes = Math.floor(((new Date() - modifiedDate) / 1000) / 60);
-        if (elapsedMinutes < config.cacheLifetimeMinutes)
-        {
+        if (elapsedMinutes < config.cacheLifetimeMinutes) {
             return JSON.parse(await fs.readFile(cacheFileName));
         }
         return null;
