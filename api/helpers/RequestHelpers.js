@@ -69,9 +69,13 @@ function filterFields(items, fieldList) {
     for (let item of items) {
         let filteredItem = {};
         for (let field of fields) {
-            filteredItem[field] = item[field];
+            if (item[field]) {
+                filteredItem[field] = item[field];
+            }
         }
-        resultList.push(filteredItem);
+        if (Object.keys(filteredItem).length !== 0) {
+            resultList.push(filteredItem);
+        };
     }
     return resultList;
 }
