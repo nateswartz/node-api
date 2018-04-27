@@ -35,29 +35,45 @@ async function getCollection(collectionName) {
 }
 
 function filterCollection(collection, filters) {
-    let results = collection;
     for (let attribute in filters) {
         if (Object.prototype.hasOwnProperty.call(filters, attribute)) {
             let intermediateResults = [];
-            // for non-numeric filters, check filter is substring of attribute
-            if (isNaN(filters[attribute])) {
-                results.forEach(function(item) {
+            for (let item of collection) {
+                if (!item[attribute]) {
+                    break;
+                }
+                // for non-numeric filters, check filter is substring of attribute
+                if (isNaN(filters[attribute])) {
                     if (item[attribute].includes(filters[attribute])) {
                         intermediateResults.push(item);
                     }
-                });
-            // for numeric filters, check filter is greater than attribute
-            } else {
-                results.forEach(function(item) {
+                // for numeric filters, check filter is greater than attribute
+                } else {
                     if (parseInt(item[attribute]) > parseInt(filters[attribute])) {
                         intermediateResults.push(item);
                     }
-                });
+                }
             }
-            results = intermediateResults;
+            collection = intermediateResults;
         }
     }
-    return results;
+    return collection;
+}
+
+function filterFields(items, fieldList) {
+    if (!Array.isArray(items)) {
+        items = [items];
+    }
+    let fields = fieldList.split(',');
+    let resultList = [];
+    for (let item of items) {
+        let filteredItem = {};
+        for (let field of fields) {
+            filteredItem[field] = item[field];
+        }
+        resultList.push(filteredItem);
+    }
+    return resultList;
 }
 
 async function getItem(collectionName, id) {
@@ -121,4 +137,8 @@ async function getCachedResults(cacheFileName) {
     }
 }
 
-module.exports = {getCollection, filterCollection, getItem, getCollectionForItemProperty};
+module.exports = {getCollection,
+                  filterCollection,
+                  filterFields,
+                  getItem,
+                  getCollectionForItemProperty};

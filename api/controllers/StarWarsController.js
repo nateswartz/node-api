@@ -4,7 +4,10 @@ const CollectionResponse = require('../models/CollectionResponse');
 const helpers = require('../helpers/RequestHelpers.js');
 
 exports.getAllItems = async function(req, res) {
-    const items = await helpers.getCollection(req.params.collection);
+    let items = await helpers.getCollection(req.params.collection);
+    if (req.query.fields) {
+        items = helpers.filterFields(items, req.query.fields);
+    }
     if (items.length != 0) {
         res.json(new CollectionResponse(items));
     } else {
@@ -13,7 +16,10 @@ exports.getAllItems = async function(req, res) {
 };
 
 exports.getItem = async function(req, res) {
-    const item = await helpers.getItem(req.params.collection, req.params.item_id);
+    let item = await helpers.getItem(req.params.collection, req.params.item_id);
+    if (req.query.fields) {
+        item = helpers.filterFields(item, req.query.fields);
+    }
     if (item) {
         res.json(item);
     } else {
@@ -22,7 +28,7 @@ exports.getItem = async function(req, res) {
 };
 
 exports.getItemWithInfo = async function(req, res) {
-    const item = await helpers.getItem(req.params.collection, req.params.item_id);
+    let item = await helpers.getItem(req.params.collection, req.params.item_id);
 
     for (let property in item) {
         if (Array.isArray(item[property])
