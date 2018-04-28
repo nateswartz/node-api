@@ -3,6 +3,8 @@
 const axios = require('axios');
 const fs = require('fs/promises');
 
+const config = require('../../config.json');
+
 async function getCollection(url) {
     const cacheFileName = url.replace(/\/|\\|\:|\*|\?|\"|\<|\>|\|/g, '') + '.json';
     const cachedResults = await getCachedResults(cacheFileName);

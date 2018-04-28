@@ -1,4 +1,5 @@
 {
     "cacheLifetimeMinutes" : 60,
-    "swapiBaseUrl": "https://swapi.co/api/"
+    "swapiBaseUrl": "https://swapi.co/api/",
+    "pokemonBaseUrl": "https://pokeapi.co/api/v2/"
 }
