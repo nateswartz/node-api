@@ -3,10 +3,7 @@
 const axios = require('axios');
 const fs = require('fs/promises');
 
-const config = require('../../config.json');
-
-async function getCollection(collectionName) {
-    let url = config.swapiBaseUrl + collectionName;
+async function getCollection(url) {
     const cacheFileName = url.replace(/\/|\\|\:|\*|\?|\"|\<|\>|\|/g, '') + '.json';
     const cachedResults = await getCachedResults(cacheFileName);
     if (cachedResults) {
@@ -80,8 +77,7 @@ function filterFields(items, fieldList) {
     return resultList;
 }
 
-async function getItem(collectionName, id) {
-    const url = config.swapiBaseUrl + collectionName;
+async function getItem(url, id) {
     const cacheFileName = url.replace(/\/|\\|\:|\*|\?|\"|\<|\>|\|/g, '') + '.json';
     const cachedResults = await getCachedResults(cacheFileName);
     if (cachedResults) {
@@ -104,19 +100,15 @@ async function getItem(collectionName, id) {
 
 async function getCollectionForItemProperty(item, property) {
     let collection = [];
-    if (Array.isArray(item[property])) {
-        for (let url of item[property]) {
-            const pieces = url.split('/');
-            const resource = pieces[pieces.length - 3];
-            const id = pieces[pieces.length - 2];
-            const element = await getItem(resource, id);
-            collection.push(element);
-        }
-    } else {
-        const pieces = item[property].split('/');
-        const resource = pieces[pieces.length - 3];
+    if (!Array.isArray(item[property])) {
+        item[property] = [item[property]];
+    }
+
+    for (let url of item[property]) {
+        const pieces = url.split('/');
         const id = pieces[pieces.length - 2];
-        const element = await getItem(resource, id);
+        const baseUrl = pieces.slice(0, pieces.length - 2).join('/');
+        const element = await getItem(baseUrl, id);
         collection.push(element);
     }
 
