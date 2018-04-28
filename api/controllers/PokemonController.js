@@ -7,12 +7,13 @@ const CollectionResponse = require('../models/CollectionResponse');
 
 const config = require('../../config.json');
 
+const _listCacheFileName = './cache/pokemon_list.json';
+const _detailsCacheFileName = './cache/pokemon_details';
+
 exports.getAllItems = async function(req, res) {
     try {
-        const listCacheFileName = './cache/pokemon_list.json';
-        const detailsCacheFileName = './cache/pokemon_details';
         let items = await getCollection(config.pokemonBaseUrl + req.params.collection,
-                                        listCacheFileName);
+                                        _listCacheFileName);
         if (req.query.fields) {
             items = filterFields(items, req.query.fields);
         }
@@ -24,10 +25,10 @@ exports.getAllItems = async function(req, res) {
             const pieces = item.url.split('/');
             const baseUrl = pieces.slice(0, pieces.length - 2).join('/');
             const id = pieces[pieces.length - 2];
-            const newItem = await getItem(baseUrl, id, detailsCacheFileName + id + '.json');
-            const cachedResults = await getCachedResults(detailsCacheFileName + id + '.json');
+            const newItem = await getItem(baseUrl, id, _detailsCacheFileName + id + '.json');
+            const cachedResults = await getCachedResults(_detailsCacheFileName + id + '.json');
             if (!cachedResults) {
-                await fs.writeFile(detailsCacheFileName + id + '.json',
+                await fs.writeFile(_detailsCacheFileName + id + '.json',
                                    JSON.stringify(newItem, null, 2),
                                    'utf-8');
             }
@@ -46,9 +47,16 @@ exports.getAllItems = async function(req, res) {
 
 exports.getItem = async function(req, res) {
     try {
-        const detailsCacheFileName = 'pokemon_details.json';
+        const cacheFileName = _detailsCacheFileName + req.params.item_id + '.json';
         let item = await getItem(config.pokemonBaseUrl + req.params.collection,
-                                 req.params.item_id, detailsCacheFileName);
+                                 req.params.item_id,
+                                 cacheFileName);
+        const cachedResults = await getCachedResults(cacheFileName);
+        if (!cachedResults) {
+            await fs.writeFile(cacheFileName,
+                            JSON.stringify(item, null, 2),
+                            'utf-8');
+        }
         if (req.query.fields) {
             item = filterFields(item, req.query.fields);
         }
