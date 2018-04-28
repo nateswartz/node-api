@@ -4,6 +4,9 @@ const starWarsController = require('../controllers/StarWarsController');
 const pokemonController = require('../controllers/PokemonController');
 
 module.exports = function(app) {
+    app.route('/starwars')
+        .get(starWarsController.getDescription);
+
     app.route('/starwars/:collection')
         .get(starWarsController.getAllItems);
 

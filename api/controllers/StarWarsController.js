@@ -2,8 +2,22 @@
 
 const CollectionResponse = require('../models/CollectionResponse');
 const helpers = require('../helpers/RequestHelpers.js');
+const path = require('path');
 
 const config = require('../../config.json');
+
+exports.getDescription = async function(req, res) {
+    try {
+        let projectRootDirectory = __dirname.split(path.sep);
+        projectRootDirectory = projectRootDirectory
+                                    .slice(0, projectRootDirectory.length - 2)
+                                    .join(path.sep);
+        res.sendFile(path.join(projectRootDirectory+'/api/static_content/swapi_description.txt'));
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Unknown error');
+    }
+};
 
 exports.getAllItems = async function(req, res) {
     try {
