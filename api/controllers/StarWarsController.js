@@ -63,7 +63,7 @@ exports.getItemWithInfo = async function(req, res) {
 
 exports.getFilteredItems = async function(req, res) {
     try {
-        let items = await helpers.getCollection(req.params.collection);
+        let items = await helpers.getCollection(config.swapiBaseUrl + req.params.collection);
         items = helpers.filterCollection(items, req.query);
         if (items.length != 0) {
             res.json(new CollectionResponse(items));
@@ -77,7 +77,7 @@ exports.getFilteredItems = async function(req, res) {
 
 exports.getRandomItem = async function(req, res) {
     try {
-        let items = await helpers.getCollection(req.params.collection);
+        let items = await helpers.getCollection(config.swapiBaseUrl + req.params.collection);
         if (items.length !=0) {
             const randomItem = items[Math.floor(Math.random() * items.length)];
             res.json(new CollectionResponse(randomItem));
