@@ -1,0 +1,14 @@
+This is a proxy for the Star Wars API (https://www.swapi.co), the following endpoints are available:
+/species/
+/people/
+/starships/
+/films/
+/vehicles/
+/planets/
+
+Each endpoint supports the following methods:
+Get a single item - /collection/id (i.e. /species/3)
+Get all items - /collection (i.e. /species/)
+Get a filtered list of items - /collection/filtered?attribute=value (i.e. /species/filtered?lifespan=300)
+Get a random item - /collection/random (i.e. /species/random)
+Get an expanded view of a single item - /collection/id/info (i.e. /species/3/info)
