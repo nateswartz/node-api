@@ -1,0 +1,12 @@
+version: '2'
+
+services:
+
+  node:
+    container_name: node-swapi-shared
+    image: node-swapi-shared
+    build: .
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "3000:3000"
