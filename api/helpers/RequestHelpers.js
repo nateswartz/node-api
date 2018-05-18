@@ -1,7 +1,13 @@
 'use strict';
 
 const axios = require('axios');
-const fs = require('fs/promises');
+const fs = require('fs');
+const util = require('util');
+
+const statAsync = util.promisify(fs.stat);
+const writeFileAsync = util.promisify(fs.writeFile);
+const readFileAsync = util.promisify(fs.readFile);
+
 
 const config = require('../../config.json');
 
@@ -25,7 +31,7 @@ async function getCollection(url) {
                 });
                 collection = collection.concat(data.results);
             }
-            await fs.writeFile(cacheFileName, JSON.stringify(collection, null, 2), 'utf-8');
+            await writeFileAsync(cacheFileName, JSON.stringify(collection, null, 2), 'utf-8');
             return collection;
         } catch (error) {
             return [];
@@ -123,11 +129,11 @@ async function getCollectionForItemProperty(item, property) {
 
 async function getCachedResults(cacheFileName) {
     try {
-        const stats = await fs.stat(cacheFileName);
+        const stats = await statAsync(cacheFileName);
         const modifiedDate = stats.mtime;
         const elapsedMinutes = Math.floor(((new Date() - modifiedDate) / 1000) / 60);
         if (elapsedMinutes < config.cacheLifetimeMinutes) {
-            return JSON.parse(await fs.readFile(cacheFileName));
+            return JSON.parse(await readFileAsync(cacheFileName));
         }
         return null;
     } catch (error) {

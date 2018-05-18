@@ -1,7 +1,12 @@
 'use strict';
 
 const axios = require('axios');
-const fs = require('fs/promises');
+const fs = require('fs');
+const util = require('util');
+
+const statAsync = util.promisify(fs.stat);
+const writeFileAsync = util.promisify(fs.writeFile);
+const readFileAsync = util.promisify(fs.readFile);
 
 const CollectionResponse = require('../models/CollectionResponse');
 
@@ -28,7 +33,7 @@ exports.getAllItems = async function(req, res) {
             const newItem = await getItem(baseUrl, id, _detailsCacheFileName + id + '.json');
             const cachedResults = await getCachedResults(_detailsCacheFileName + id + '.json');
             if (!cachedResults) {
-                await fs.writeFile(_detailsCacheFileName + id + '.json',
+                await writeFileAsync(_detailsCacheFileName + id + '.json',
                                    JSON.stringify(newItem, null, 2),
                                    'utf-8');
             }
@@ -53,7 +58,7 @@ exports.getItem = async function(req, res) {
                                  cacheFileName);
         const cachedResults = await getCachedResults(cacheFileName);
         if (!cachedResults) {
-            await fs.writeFile(cacheFileName,
+            await writeFileAsync(cacheFileName,
                             JSON.stringify(item, null, 2),
                             'utf-8');
         }
@@ -141,7 +146,7 @@ async function getCollection(url, cacheFileName) {
                 });
                 collection = collection.concat(data.results);
             }
-            await fs.writeFile(cacheFileName, JSON.stringify(collection, null, 2), 'utf-8');
+            await writeFileAsync(cacheFileName, JSON.stringify(collection, null, 2), 'utf-8');
             return collection;
         } catch (error) {
             return [];
@@ -188,13 +193,13 @@ async function getItem(url, id, cacheFileName) {
 async function getCachedResults(cacheFileName, ignoreTime) {
     try {
         if (ignoreTime) {
-            return JSON.parse(await fs.readFile(cacheFileName));
+            return JSON.parse(await readFileAsync(cacheFileName));
         }
-        const stats = await fs.stat(cacheFileName);
+        const stats = await statAsync(cacheFileName);
         const modifiedDate = stats.mtime;
         const elapsedMinutes = Math.floor(((new Date() - modifiedDate) / 1000) / 60);
         if (elapsedMinutes < config.cacheLifetimeMinutes) {
-            return JSON.parse(await fs.readFile(cacheFileName));
+            return JSON.parse(await readFileAsync(cacheFileName));
         }
         return null;
     } catch (error) {
