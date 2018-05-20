@@ -1,0 +1,36 @@
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.1/semantic.min.css">
+    </head>
+    <body>
+        <div class="ui segment">
+            <h1 class="ui header">SWAPI Proxy</h1>
+            <div class="ui message">
+                <div style="padding-left: 0.5em; padding-bottom: 1em">
+                    <p>This is a proxy for the Star Wars API (https://www.swapi.co), the following endpoints are available:</p>
+                </div>
+                <div style="padding-left: 2em; padding-bottom: 1em">
+                    <p>/species/</p>
+                    <p>/people/</p>
+                    <p>/starships/</p>
+                    <p>/films/</p>
+                    <p>/vehicles/</p>
+                    <p>/planets/</p>
+                </div>
+                <div style="padding-left: 0.5em; padding-bottom: 1em">
+                    <p>Each endpoint supports the following methods:</p>
+                </div>
+                <div style="padding-left: 2em; padding-bottom: 1em">
+                    <p>Get a single item - /collection/id (i.e. /species/3)</p>
+                    <p>Get all items - /collection (i.e. /species/)</p>
+                    <p>Get a filtered list of items - /collection/filtered?attribute=value (i.e. /species/filtered?lifespan=300)</p>
+                    <p>Get a random item - /collection/random (i.e. /species/random)</p>
+                    <p>Get an expanded view of a single item - /collection/id/info (i.e. /species/3/info)</p>
+                </div>
+            </div>
+        </div>
+        
+    
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.1/semantic.min.js"></script>
+    </body>
+</html>
