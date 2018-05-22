@@ -3,10 +3,27 @@ version: '2'
 services:
 
   node:
-    container_name: node-swapi-shared
-    image: node-swapi-shared
+     container_name: node-swapi-shared
+     image: node-swapi-shared
+     build: .
+     volumes:
+       - .:/usr/src/app
+     ports:
+       - "3000:3000"
+     links:
+       - mongo
+  mongo:
+    container_name: mongo
+    image: mongo
     build: .
     volumes:
-      - .:/usr/src/app
+      - mongodata:/data/db
     ports:
-      - "3000:3000"
+      - "27017:27017"
+    command:
+      --dbpath=./data/db
+
+
+volumes:
+  mongodata:
+    external: true
