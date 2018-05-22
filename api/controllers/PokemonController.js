@@ -4,6 +4,8 @@ const axios = require('axios');
 const fs = require('fs');
 const util = require('util');
 
+const PokemonModel = require('../models/PokemonModel');
+
 const statAsync = util.promisify(fs.stat);
 const writeFileAsync = util.promisify(fs.writeFile);
 const readFileAsync = util.promisify(fs.readFile);
@@ -183,6 +185,9 @@ async function getItem(url, id, cacheFileName) {
             console.log('Sending request to ' + url + '/' + id);
             const response = await axios.get(url + '/' + id);
             response.data.id = id;
+            console.log('Saving in cache');
+            await saveItemToCache(response.data);
+            console.log('Saved to cache');
             return response.data;
         } catch (error) {
             return null;
@@ -205,4 +210,22 @@ async function getCachedResults(cacheFileName, ignoreTime) {
     } catch (error) {
         return null;
     }
+}
+
+async function saveItemToCache(item) {
+        console.log('Saving to mongo');
+        console.log(item);
+        // Create an instance of model SomeModel
+        const pokemonInstance = new PokemonModel(item);
+
+        // Save the new model instance, passing a callback
+        try {
+            await pokemonInstance.save();
+        } catch (error) {
+            console.log('Error: ' + error);
+        }
+        console.log('Saved in mongo');
+
+        const savedItem = await PokemonModel.findOne({name: item.name}).exec();
+        console.log(savedItem);
 }
