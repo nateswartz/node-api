@@ -2,8 +2,13 @@
 
 const bodyParser = require('body-parser');
 const express = require('express');
+const mongoose = require('mongoose');
 const app = express();
 const port = process.env.PORT || 3000;
+
+const PersonModel = require('./api/schemas/PersonSchema');
+
+const mongoDB = 'mongodb://mongo/natetest';
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
@@ -11,43 +16,32 @@ app.use(bodyParser.json());
 const routes = require('./api/routes/Routes'); // importing route
 routes(app); // register the route
 
-app.listen(port, function() {
-    console.log('API server started on: ' + port);
-});
-
-
-// Import the mongoose module
-const mongoose = require('mongoose');
-
-// Set up default mongoose connection
-const mongoDB = 'mongodb://mongo/natetest';
 mongoose.connect(mongoDB);
 // Get Mongoose to use the global promise library
 mongoose.Promise = global.Promise;
 // Get the default connection
 const db = mongoose.connection;
 
-// Bind connection to error event (to get notification of connection errors)
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
-
-
-// Define a schema
-const Schema = mongoose.Schema;
-
-const SomeModelSchema = new Schema({
-    a_string: String,
-    a_date: Date,
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function() {
+  app.listen(port, function() {
+    console.log('API server started on: ' + port);
+  });
+  writeTestData();
 });
 
-// Compile model from schema
-const SomeModel = mongoose.model('SomeModel', SomeModelSchema );
+function writeTestData() {
+    // Create an instance of model SomeModel
+    const personInstance = new PersonModel({name: 'Darth', height: 32});
 
-// Create an instance of model SomeModel
-const awesomeInstance = new SomeModel({ name: 'awesome' });
-
-// Save the new model instance, passing a callback
-awesomeInstance.save(function(err) {
-  if (err) return handleError(err);
-  console.log('Saved!');
-  // saved!
-});
+    // Save the new model instance, passing a callback
+    personInstance.save(function(err) {
+        if (err) return handleError(err);
+        console.log('Saved!');
+        PersonModel.find({'name': 'Leia'}, 'height', function(err, results) {
+            if (err) return handleError(err);
+            console.log('Got records: ');
+            console.log(results);
+            });
+    });
+};
