@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 const app = express();
 const port = process.env.PORT || 3000;
 
-const mongoDB = 'mongodb://mongo/natetest';
+const mongoDB = 'mongodb://mongo/nodeapi';
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());

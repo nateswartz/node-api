@@ -176,19 +176,19 @@ function filterFields(items, fieldList) {
     return resultList;
 }
 
-async function getItem(url, id, cacheFileName) {
-    const cachedResults = await getCachedResults(cacheFileName);
-    if (cachedResults) {
-        return cachedResults;
+async function getItem(url, id) {
+    const cachedItem = await checkCache(id);
+    if (cachedItem) {
+        return cachedItem;
     } else {
         try {
             console.log('Sending request to ' + url + '/' + id);
             const response = await axios.get(url + '/' + id);
             response.data.id = id;
             console.log('Saving in cache');
-            await saveItemToCache(response.data);
+            const item = await saveItemToCache(response.data);
             console.log('Saved to cache');
-            return response.data;
+            return item;
         } catch (error) {
             return null;
         }
@@ -212,13 +212,22 @@ async function getCachedResults(cacheFileName, ignoreTime) {
     }
 }
 
+async function checkCache(cacheId) {
+    console.log('Checking mongo cache for ' + cacheId);
+    const cachedItem = await PokemonModel.findOne({id: cacheId}).exec();
+    if (cachedItem) {
+        console.log('Found cached item');
+        console.log(cachedItem);
+    }
+    return cachedItem;
+}
+
 async function saveItemToCache(item) {
         console.log('Saving to mongo');
         console.log(item);
         // Create an instance of model SomeModel
         const pokemonInstance = new PokemonModel(item);
 
-        // Save the new model instance, passing a callback
         try {
             await pokemonInstance.save();
         } catch (error) {
@@ -228,4 +237,6 @@ async function saveItemToCache(item) {
 
         const savedItem = await PokemonModel.findOne({name: item.name}).exec();
         console.log(savedItem);
+        console.log('First stat name - ' + savedItem.stats[0].stat.name);
+        return savedItem;
 }
