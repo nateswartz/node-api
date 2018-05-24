@@ -1,69 +1,53 @@
 'use strict';
 
 const axios = require('axios');
-const fs = require('fs');
-const util = require('util');
 
 const PokemonModel = require('../models/PokemonModel');
-
-const statAsync = util.promisify(fs.stat);
-const writeFileAsync = util.promisify(fs.writeFile);
-const readFileAsync = util.promisify(fs.readFile);
+const PokemonCollectionCacheModel = require('../models/PokemonCollectionCacheModel');
 
 const CollectionResponse = require('../models/CollectionResponse');
 
 const config = require('../../config.json');
 
-const _listCacheFileName = './cache/pokemon_list.json';
-const _detailsCacheFileName = './cache/pokemon_details';
-
 exports.getAllItems = async function(req, res) {
     try {
-        let items = await getCollection(config.pokemonBaseUrl + req.params.collection,
-                                        _listCacheFileName);
+        let items = await getCollection(config.pokemonBaseUrl + req.params.collection);
         if (req.query.fields) {
             items = filterFields(items, req.query.fields);
         }
 
-        items = items.slice(0, 30);
-
+        let counter = 0;
         let detailedItems = [];
         for (let item of items) {
             const pieces = item.url.split('/');
             const baseUrl = pieces.slice(0, pieces.length - 2).join('/');
             const id = pieces[pieces.length - 2];
-            const newItem = await getItem(baseUrl, id, _detailsCacheFileName + id + '.json');
-            const cachedResults = await getCachedResults(_detailsCacheFileName + id + '.json');
-            if (!cachedResults) {
-                await writeFileAsync(_detailsCacheFileName + id + '.json',
-                                   JSON.stringify(newItem, null, 2),
-                                   'utf-8');
+            const cached = await checkCacheForPokemon(id);
+            if (!cached) {
+                counter++;
             }
+            const newItem = await getItem(baseUrl, id);
             detailedItems.push(newItem);
+            if (counter > 10) {
+                break;
+            }
         }
 
-        if (detailedItems.length != 0) {
+        if (items.length != 0) {
             res.json(new CollectionResponse(detailedItems));
         } else {
             res.status(404).send('No items found.');
         }
     } catch (error) {
+        console.log(error);
         res.status(500).send('Unknown error.');
     }
 };
 
 exports.getItem = async function(req, res) {
     try {
-        const cacheFileName = _detailsCacheFileName + req.params.item_id + '.json';
         let item = await getItem(config.pokemonBaseUrl + req.params.collection,
-                                 req.params.item_id,
-                                 cacheFileName);
-        const cachedResults = await getCachedResults(cacheFileName);
-        if (!cachedResults) {
-            await writeFileAsync(cacheFileName,
-                            JSON.stringify(item, null, 2),
-                            'utf-8');
-        }
+                                 req.params.item_id);
         if (req.query.fields) {
             item = filterFields(item, req.query.fields);
         }
@@ -128,31 +112,35 @@ exports.getItem = async function(req, res) {
 //     }
 // };
 
-async function getCollection(url, cacheFileName) {
-    const cachedResults = await getCachedResults(cacheFileName);
-    if (cachedResults) {
-        return cachedResults;
-    } else {
-        let collection = [];
-        try {
-            while (url != null) {
-                console.log('Sending request to ' + url);
+async function getCollection(url) {
+    let collection = [];
+    try {
+        while (url != null) {
+            let items = [];
+            const cachedItem = await checkCacheForCollection(url);
+            if (cachedItem) {
+                console.log('Reading item from cache: ' + url);
+                url = cachedItem.next;
+                items = cachedItem.results;
+            } else {
+                console.log('Sending request to: ' + url);
                 const response = await axios.get(url);
                 const data = response.data;
+                await saveCollectionResponseToCache(url, data);
                 url = data.next;
-                const items = response.data.results;
-                items.forEach(function(item) {
-                    const pieces = item.url.split('/');
-                    const id = pieces[pieces.length - 2];
-                    item.id = id;
-                });
-                collection = collection.concat(data.results);
+                items = data.results;
             }
-            await writeFileAsync(cacheFileName, JSON.stringify(collection, null, 2), 'utf-8');
-            return collection;
-        } catch (error) {
-            return [];
+            items.forEach(function(item) {
+                const pieces = item.url.split('/');
+                const id = pieces[pieces.length - 2];
+                item.id = id;
+            });
+            collection = collection.concat(items);
         }
+        return collection;
+    } catch (error) {
+        console.log(error);
+        return [];
     }
 }
 
@@ -177,16 +165,16 @@ function filterFields(items, fieldList) {
 }
 
 async function getItem(url, id) {
-    const cachedItem = await checkCache(id);
+    const cachedItem = await checkCacheForPokemon(id);
     if (cachedItem) {
         return cachedItem;
     } else {
         try {
-            console.log('Sending request to ' + url + '/' + id);
+            console.log('Sending request to: ' + url + '/' + id);
             const response = await axios.get(url + '/' + id);
             response.data.id = id;
             console.log('Saving in cache');
-            const item = await saveItemToCache(response.data);
+            const item = await savePokemonToCache(response.data);
             console.log('Saved to cache');
             return item;
         } catch (error) {
@@ -195,36 +183,42 @@ async function getItem(url, id) {
     }
 }
 
-async function getCachedResults(cacheFileName, ignoreTime) {
-    try {
-        if (ignoreTime) {
-            return JSON.parse(await readFileAsync(cacheFileName));
-        }
-        const stats = await statAsync(cacheFileName);
-        const modifiedDate = stats.mtime;
-        const elapsedMinutes = Math.floor(((new Date() - modifiedDate) / 1000) / 60);
-        if (elapsedMinutes < config.cacheLifetimeMinutes) {
-            return JSON.parse(await readFileAsync(cacheFileName));
-        }
-        return null;
-    } catch (error) {
-        return null;
-    }
-}
-
-async function checkCache(cacheId) {
-    console.log('Checking mongo cache for ' + cacheId);
-    const cachedItem = await PokemonModel.findOne({id: cacheId}).exec();
+async function checkCacheForCollection(url) {
+    console.log('Checking mongo cache for: ' + url);
+    const cachedItem = await PokemonCollectionCacheModel.findOne({request_url: url}).exec();
     if (cachedItem) {
-        console.log('Found cached item');
-        console.log(cachedItem);
+        console.log('Found cached item: ' + cachedItem.request_url);
     }
     return cachedItem;
 }
 
-async function saveItemToCache(item) {
-        console.log('Saving to mongo');
-        console.log(item);
+async function saveCollectionResponseToCache(requestUrl, response) {
+    const pokemonCollectionInstance = new PokemonCollectionCacheModel(response);
+    pokemonCollectionInstance.request_url = requestUrl;
+    console.log('Saving to mongo: ' + requestUrl);
+
+    try {
+        await pokemonCollectionInstance.save();
+    } catch (error) {
+        console.log('Error: ' + error);
+    }
+    console.log('Saved in mongo');
+
+    const savedItem = await PokemonCollectionCacheModel.findOne({request_url: requestUrl}).exec();
+    return savedItem;
+}
+
+async function checkCacheForPokemon(cacheId) {
+    console.log('Checking mongo cache for: ' + cacheId);
+    const cachedItem = await PokemonModel.findOne({id: cacheId}).exec();
+    if (cachedItem) {
+        console.log('Found cached item: ' + cacheId);
+    }
+    return cachedItem;
+}
+
+async function savePokemonToCache(item) {
+        console.log('Saving to mongo: ' + item.id);
         // Create an instance of model SomeModel
         const pokemonInstance = new PokemonModel(item);
 
@@ -236,7 +230,6 @@ async function saveItemToCache(item) {
         console.log('Saved in mongo');
 
         const savedItem = await PokemonModel.findOne({name: item.name}).exec();
-        console.log(savedItem);
         console.log('First stat name - ' + savedItem.stats[0].stat.name);
         return savedItem;
 }
