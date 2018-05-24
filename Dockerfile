@@ -4,7 +4,8 @@ FROM node
 WORKDIR /usr/src/app
 
 RUN npm install
+RUN npm install nodemon -g
 
 EXPOSE 3000
 
-CMD [ "node", "server.js" ]
+CMD [ "nodemon", "--verbose", "-L", "server.js" ]
