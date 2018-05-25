@@ -1,5 +1,6 @@
 'use strict';
 
+const path = require('path');
 const axios = require('axios');
 
 const PokemonModel = require('../models/PokemonModel');
@@ -8,6 +9,19 @@ const PokemonCollectionCacheModel = require('../models/PokemonCollectionCacheMod
 const CollectionResponse = require('../models/CollectionResponse');
 
 const config = require('../../config.json');
+
+exports.getDescription = async function(req, res) {
+    try {
+        let projectRootDirectory = __dirname.split(path.sep);
+        projectRootDirectory = projectRootDirectory
+                                    .slice(0, projectRootDirectory.length - 2)
+                                    .join(path.sep);
+        res.sendFile(path.join(projectRootDirectory, '/api/static_content/poke_description.html'));
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Unknown error');
+    }
+};
 
 exports.getAllItems = async function(req, res) {
     try {

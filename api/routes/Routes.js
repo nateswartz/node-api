@@ -1,9 +1,13 @@
 'use strict';
 
+const baseController = require('../controllers/BaseController');
 const starWarsController = require('../controllers/StarWarsController');
 const pokemonController = require('../controllers/PokemonController');
 
 module.exports = function(app) {
+    app.route('/')
+        .get(baseController.getDescription);
+
     app.route('/starwars')
         .get(starWarsController.getDescription);
 
@@ -25,6 +29,9 @@ module.exports = function(app) {
 
     app.route('/pokemon/:collection/:item_id/')
         .get(pokemonController.getItem);
+
+    app.route('/pokemon')
+        .get(pokemonController.getDescription);
 
     app.route('/pokemon/:collection/')
         .get(pokemonController.getAllItems);
