@@ -8,4 +8,4 @@ RUN npm install nodemon -g
 
 EXPOSE 3000
 
-CMD [ "nodemon", "--verbose", "-L", "server.js" ]
+CMD [ "nodemon", "--verbose", "--ignore", "https*.json", "-L", "server.js" ]
